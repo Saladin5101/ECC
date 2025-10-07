@@ -248,21 +248,22 @@ void parser_free(Parser* parser) {
 }
 
 // -------------------------- 辅助函数：TokenType转字符串（报错用，暂时复制lexer的实现） --------------------------
-const char* token_type_to_str(TokenType type) {
-    switch (type) {
-        case TOKEN_USE: return "TOKEN_USE";
-        case TOKEN_REG: return "TOKEN_REG";
-        case TOKEN_MEM: return "TOKEN_MEM";
-        case TOKEN_CONST: return "TOKEN_CONST";
-        case TOKEN_VAR: return "TOKEN_VAR";
-        case TOKEN_FUNC: return "TOKEN_FUNC";
-        case TOKEN_ID: return "TOKEN_ID";
-        case TOKEN_NUM_HEX: return "TOKEN_NUM_HEX";
-        case TOKEN_NUM_DEC: return "TOKEN_NUM_DEC";
-        case TOKEN_CHAR: return "TOKEN_CHAR";
-        case TOKEN_EQUALS: return "TOKEN_EQUALS";
-        case TOKEN_SEMICOLON: return "TOKEN_SEMICOLON";
-        case TOKEN_EOF: return "TOKEN_EOF";
-        default: return "未知Token类型";
-    }
-}
+// 这个函数重复定义了，先放这里，懒得删了
+/*const char* token_type_to_str(TokenType type) {
+ *  switch (type) {
+ *      case TOKEN_USE: return "TOKEN_USE";
+ *      case TOKEN_REG: return "TOKEN_REG";
+ *      case TOKEN_MEM: return "TOKEN_MEM";
+ *      case TOKEN_CONST: return "TOKEN_CONST";
+ *      case TOKEN_VAR: return "TOKEN_VAR";
+ *      case TOKEN_FUNC: return "TOKEN_FUNC";
+ *      case TOKEN_ID: return "TOKEN_ID";
+ *      case TOKEN_NUM_HEX: return "TOKEN_NUM_HEX";
+ *      case TOKEN_NUM_DEC: return "TOKEN_NUM_DEC";
+ *      case TOKEN_CHAR: return "TOKEN_CHAR";
+ *      case TOKEN_EQUALS: return "TOKEN_EQUALS";
+ *      case TOKEN_SEMICOLON: return "TOKEN_SEMICOLON";
+ *      case TOKEN_EOF: return "TOKEN_EOF";
+ *      default: return "未知Token类型";
+ *  }
+}*/

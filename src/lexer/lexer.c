@@ -2,7 +2,7 @@
 #include "../common/utils.h"
 #include <ctype.h>
 #include <string.h>
-
+#include <stdlib.h> // 为了使用malloc/free
 // 辅助函数：读取下一个字符，并更新行号
 static void next_char(Lexer* lexer) {
     lexer->current_char = fgetc(lexer->fp);
