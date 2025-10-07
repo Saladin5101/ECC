@@ -9,7 +9,12 @@
 // 打印错误信息并退出程序（支持可变参数，如error("行号%d：%s", line, msg)）
 // 自动添加换行，错误码固定为1
 void error(const char* format, ...);
-
+// src/common/utils.h 新增
+// 带组信息的错误提示（如“标识符不在某个组中”）
+void error_with_group(const char* id, const char* group);
+// 同理，也可以有其它的错误提示，可以在下面补充
+// 带文件名和行号的错误提示
+void error_with_file_line(const char* filename, int line, const char* format, ...);
 // -------------------------- 字符串转数字 --------------------------
 // 字符串转十六进制数字（支持0x前缀，如"0x1234"→4660）
 // 若字符串非法，调用error报错

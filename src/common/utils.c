@@ -16,7 +16,20 @@ void error(const char* format, ...) {
     va_end(args);
     exit(1);  // 报错后直接退出，避免后续错误
 }
-
+// -------------------------- 带组信息的错误提示 --------------------------
+void error_with_group(const char* id, const char* group) {
+    error("E: cannot find '%s' in file, it's not in group '%s'", id, group);
+}
+/* -------------------------- 带文件名和行号的错误提示 --------------------------
+ *  void error_with_file_line(const char* filename, int line, const char* format, ...) {
+ *  va_list args;
+ *  va_start(args, format);
+ *  fprintf(stderr, "[ERROR] In file '%s' at line %d: ", filename, line);
+ *  vfprintf(stderr, format, args);
+ *  fprintf(stderr, "\n");
+ *  va_end(args);
+}*/
+// 以上代码暂时预留，后续可根据需要补充
 // -------------------------- 字符串转数字实现 --------------------------
 uint32_t str_to_hex(const char* s) {
     if (s == NULL || *s == '\0') {

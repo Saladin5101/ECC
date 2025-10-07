@@ -83,6 +83,9 @@ static AstNode* parser_parse_reg_assign(Parser* parser) {
     Token reg_tok = parser->current_tok;
     parser_match(parser, TOKEN_ID);
 
+    // 检查寄存器名是否合法（比如ax、bx等）
+    error_with_group(reg_tok.value, "x86_mem_registers");
+
     // 步骤3：匹配"="
     parser_match(parser, TOKEN_EQUALS);
 
