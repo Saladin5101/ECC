@@ -1,0 +1,3 @@
+use x86_real;
+reg.ax = 0x1234;
+reg.bx = 0x5678;
