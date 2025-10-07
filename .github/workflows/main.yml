@@ -1,65 +1,53 @@
-name: ELFCOST 编译与测试
+name: ELFCOST 编译与测试（Linux/macOS）
 
-# 触发条件：推送到main分支，或对main分支的PR
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
-# 运行环境：Linux和macOS（暂不支持Windows，符合之前的规划）
 jobs:
   build-and-test:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]  # 测试两种主流平台
+        os: [ubuntu-latest, macos-latest]  # 仅聚焦当前可落地的平台
 
     steps:
     - name: 拉取代码
-      uses: actions/checkout@v4  # GitHub官方action，拉取当前仓库代码
+      uses: actions/checkout@v4
 
-    - name: 安装依赖（Linux）
-      if: matrix.os == 'ubuntu-latest'  # 仅Linux需要安装gcc（macOS自带）
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y gcc make  # 安装C编译器和make
+    - name: 安装依赖（仅Linux）
+      if: matrix.os == 'ubuntu-latest'
+      run: sudo apt-get update && sudo apt-get install -y gcc make
 
-    - name: 编译ELFCOST编译器（debug模式，带调试信息）
-      run: |
-        make debug  # 调用根目录的Makefile，编译debug版本（方便测试报错定位）
-        ls -lh elfc-compiler-dbg  # 打印编译产物，确认生成成功
+    - name: 编译编译器（debug模式）
+      run: make debug && ls -lh elfc-compiler-dbg  # 验证编译产物
 
-    - name: 运行单元测试（验证词法/语法分析）
-      run: |
-        make test  # 编译并运行tests/目录下的测试用例
-        ./tests/runner  # 执行测试程序，失败会返回非0退出码
+    - name: 运行单元测试（词法/语法分析）
+      run: make test && ./tests/runner  # 仅测试通用模块，不依赖E-comOS
 
-    - name: 测试示例代码编译（验证代码生成功能）
+    - name: 测试示例代码（生成通用裸机二进制）
       run: |
-        # 编译examples/目录下的所有.elfc文件
-        ./elfc-compiler-dbg examples/boot.elfc boot.bin
-        ./elfc-compiler-dbg examples/uart.elfc uart.bin
-        ./elfc-compiler-dbg examples/mbr.elfc mbr.bin
-        
-        # 验证MBR示例是否符合512字节规范
-        echo "检查mbr.bin大小："
-        ls -l mbr.bin
-        if [ $(stat -c%s mbr.bin) -ne 512 ]; then  # Linux用stat -c%s，macOS用stat -f%z
-          echo "错误：mbr.bin大小不是512字节"
+        # 编译通用嵌入式示例（不涉及E-comOS专属硬件）
+        ./elfc-compiler-dbg examples/x86_real_boot.elfc boot.bin  # x86实模式启动代码
+        ./elfc-compiler-dbg examples/uart_demo.elfc uart.bin      # 通用UART测试
+        ./elfc-compiler-dbg examples/mbr_template.elfc mbr.bin    # 通用MBR模板
+
+        # 验证MBR二进制规范（通用裸机要求，不依赖E-comOS）
+        if [ $(uname) = "Linux" ]; then
+          file_size=$(stat -c%s mbr.bin)
+        else
+          file_size=$(stat -f%z mbr.bin)
+        fi
+        if [ $file_size -ne 512 ]; then
+          echo "错误：MBR文件大小应为512字节，实际为$file_size字节"
           exit 1
         fi
-        
-        # 验证MBR签名是否为0xaa55（最后2字节）
-        echo "检查mbr.bin签名："
-        hexdump -C mbr.bin | tail -n 1  # 打印最后几字节
-        # 用dd提取最后2字节，转为十六进制
-        if [ $(uname) = "Linux" ]; then
-          signature=$(dd if=mbr.bin bs=1 skip=510 count=2 2>/dev/null | xxd -p)
-        else  # macOS的dd语法相同，xxd也可用
-          signature=$(dd if=mbr.bin bs=1 skip=510 count=2 2>/dev/null | xxd -p)
-        fi
+
+        # 验证MBR签名（0xaa55）
+        signature=$(dd if=mbr.bin bs=1 skip=510 count=2 2>/dev/null | xxd -p)
         if [ "$signature" != "aa55" ]; then
-          echo "错误：mbr.bin签名不是0xaa55，实际为$signature"
+          echo "错误：MBR签名应为aa55，实际为$signature"
           exit 1
         fi
