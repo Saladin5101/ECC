@@ -1,21 +1,31 @@
+#ifndef CODEGEN_H
+#define CODEGEN_H
+
 #include <stdio.h>
 #include <stdlib.h>
-#include "common/utils.h"
-#include "lexer/lexer.h"
-#include "parser/parser.h"
+#include "../common/utils.h"
+#include "../lexer/lexer.h"
+#include "../parser/parser.h"
 
-// 辅助函数：打印AST（调试用，验证解析结果），这个函数重复定义了，先注释
+// Code generator function declarations
+void codegen_init(FILE* out_file);
+void codegen_generate(AstNode* ast);
+void codegen_cleanup();
+
+#endif // CODEGEN_H
+
+// Helperfunction：Print AST (for debugging, verify parsing results), this function is duplicated, commented out
 /*void ast_print(AstNode* root, int indent) {
  *   if (!root || root->type == AST_EOF) return;
  *
- *  // 打印缩进（方便看层级）
+ *  // Print indentation (for hierarchy visualization)
  *  for (int i = 0; i < indent; i++) printf("  ");
  *
- *  // 根据节点类型打印信息
+ *  // 根据节点type打印message
  *  switch (root->type) {
  *      case AST_REG_ASSIGN: {
  *          RegAssignNode* node = (RegAssignNode*)root;
- *          printf("寄存器赋值：reg.%s = ", node->reg_name);
+ *          printf("registerassignment：reg.%s = ", node->reg_name);
  *          if (node->value.type == CONST_NUM) {
  *              printf("0x%x\n", node->value.value.num_val);
  *          } else if (node->value.type == CONST_CHAR) {
@@ -25,7 +35,7 @@
  *      }
  *      case AST_CONST_DEF: {
  *          ConstDefNode* node = (ConstDefNode*)root;
- *          printf("常量定义：const %s = ", node->const_name);
+ *          printf("constantdefinition：const %s = ", node->const_name);
  *          if (node->value.type == CONST_NUM) {
  *              printf("0x%x\n", node->value.value.num_val);
  *          } else if (node->value.type == CONST_CHAR) {
@@ -35,20 +45,20 @@
  *      }
  *      case AST_BLOCK: {
  *          BlockNode* node = (BlockNode*)root;
- *          printf("代码块（行号：%d）：\n", root->line);
- *          ast_print(node->statements, indent + 1);  // 递归打印代码块里的语句
+ *          printf("code block（line：%d）：\n", root->line);
+ *          ast_print(node->statements, indent + 1);  // 递归打印code block里的语句
  *          break;
  *      }
  *      default:
- *          printf("未支持的节点类型：%d\n", root->type);
+ *          printf("未support的节点type：%d\n", root->type);
  *          break;
  *  }
  *
  *  // 打印下一个节点（链表）
  *  ast_print(root->next, indent);
 }*/
-// -------废弃的main函数，改用cli模块处理命令行参数，懒得删了-------
-// -------这里他妈哪儿来的main函数啊，搞得我一头雾水-------
+// -------废弃的mainfunction，改用climodule处理命令行parameter，懒得删了-------
+// -------这里他妈哪儿来的mainfunction啊，搞得我一头雾水-------
 /* int main(int argc, char* argv[]) {
  *  if (argc != 3) {
  *     fprintf(stderr, "用法：%s <输入文件.elfc> <输出文件.bin>\n", argv[0]);
@@ -59,10 +69,10 @@
  *  FILE* in_fp = fopen(argv[1], "r");
  *  if (!in_fp) error("无法打开输入文件：%s", argv[1]);
  *
- *  // 2. 初始化词法分析器
+ *  // 2. 初始化lexer
  *  Lexer* lexer = lexer_init(in_fp);
  *
- *  // 3. 初始化语法分析器，解析生成AST
+ *  // 3. 初始化parser，解析生成AST
  *  Parser* parser = parser_init(lexer);
  *  printf("开始解析文件：%s\n", argv[1]);
  *  AstNode* ast = parser_parse_file(parser);
@@ -71,13 +81,13 @@
  *  printf("AST解析结果：\n");
  *  ast_print(ast, 0);
  *
- *  // 5. 释放资源（暂时不做代码生成）
+ *  // 5. 释放资源（Temporarily不做代码生成）
  *  ast_free(ast);
  *  parser_free(parser);
  *  lexer_free(lexer);
  *  fclose(in_fp);
  *
- *  // 6. 临时创建空输出文件（避免报错）
+ *  // 6. 临时创建empty输出文件（避免报错）
  *  FILE* out_fp = fopen(argv[2], "wb");
  *  if (!out_fp) error("无法创建输出文件：%s", argv[2]);
  *  fclose(out_fp);

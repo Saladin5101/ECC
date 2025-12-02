@@ -11,20 +11,20 @@ static inline int fpeek(FILE* fp) {
     return c;
 }
 
-// 词法分析器状态
+// lexer状态
 typedef struct {
     FILE* fp;       // 输入文件
-    int line;       // 当前行号
-    int current_char; // 当前字符
+    int line;       // currentline
+    int current_char; // current字符
 } Lexer;
 
-// 初始化词法分析器
+// 初始化lexer
 Lexer* lexer_init(FILE* fp);
 
 // 获取下一个Token
 Token lexer_next_token(Lexer* lexer);
 
-// 释放词法分析器
+// 释放lexer
 void lexer_free(Lexer* lexer);
 
 #endif // LEXER_H

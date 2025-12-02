@@ -3,19 +3,20 @@
 #include "common/utils.h"
 #include "lexer/lexer.h"
 #include "parser/parser.h"
-#include "cli/cli.h"  // 新增的cli头文件
-// 辅助函数：打印AST（调试用，验证解析结果）
+#include "codegen/codegen.h"
+#include "cli/cli.h"  // Added cli header file
+// Helper function: Print AST (for debugging, verify parsing results)
 void ast_print(AstNode* root, int indent) {
     if (!root || root->type == AST_EOF) return;
 
-    // 打印缩进（方便看层级）
+    // Print indentation (for hierarchy visualization)
     for (int i = 0; i < indent; i++) printf("  ");
 
-    // 根据节点类型打印信息
+    // Print information based on node type
     switch (root->type) {
         case AST_REG_ASSIGN: {
             RegAssignNode* node = (RegAssignNode*)root;
-            printf("寄存器赋值：reg.%s = ", node->reg_name);
+            printf("Register assignment: reg.%s = ", node->reg_name);
             if (node->value.type == CONST_NUM) {
                 printf("0x%x\n", node->value.value.num_val);
             } else if (node->value.type == CONST_CHAR) {
@@ -25,7 +26,7 @@ void ast_print(AstNode* root, int indent) {
         }
         case AST_CONST_DEF: {
             ConstDefNode* node = (ConstDefNode*)root;
-            printf("常量定义：const %s = ", node->const_name);
+            printf("Constant definition: const %s = ", node->const_name);
             if (node->value.type == CONST_NUM) {
                 printf("0x%x\n", node->value.value.num_val);
             } else if (node->value.type == CONST_CHAR) {
@@ -35,89 +36,89 @@ void ast_print(AstNode* root, int indent) {
         }
         case AST_BLOCK: {
             BlockNode* node = (BlockNode*)root;
-            printf("代码块（行号：%d）：\n", root->line);
-            ast_print(node->statements, indent + 1);  // 递归打印代码块里的语句
+            printf("Code block (line: %d):\n", root->line);
+            ast_print(node->statements, indent + 1);  // Recursively print statements in block
             break;
         }
         default:
-            printf("未支持的节点类型：%d\n", root->type);
+            printf("Unsupported node type: %d\n", root->type);
             break;
     }
 
-    // 打印下一个节点（链表）
+    // Print next node (linked list)
     ast_print(root->next, indent);
 }
-// -------废弃的main函数，改用cli模块处理命令行参数，懒得删了-------
+// ------- Deprecated main function, replaced with cli module for command line parsing -------
 /*int main(int argc, char* argv[]) {
  *  if (argc != 3) {
- *      fprintf(stderr, "用法：%s <输入文件.elfc> <输出文件.bin>\n", argv[0]);
+ *      fprintf(stderr, "Usage: %s <input.elfc> <output.bin>\n", argv[0]);
  *      return 1;
  *  }
 
- *  // 1. 打开输入文件
+ *  // 1. Open input file
  *  FILE* in_fp = fopen(argv[1], "r");
- *  if (!in_fp) error("无法打开输入文件：%s", argv[1]);
+ *  if (!in_fp) error("Cannot open input file: %s", argv[1]);
 
- *  // 2. 初始化词法分析器
+ *  // 2. Initialize lexer
  *  Lexer* lexer = lexer_init(in_fp);
  *
- *  // 3. 初始化语法分析器，解析生成AST
+ *  // 3. Initialize parser and generate AST
  *  Parser* parser = parser_init(lexer);
- *  printf("开始解析文件：%s\n", argv[1]);
+ *  printf("Starting to parse file: %s\n", argv[1]);
  *  AstNode* ast = parser_parse_file(parser);
 
- *  // 4. 打印AST（调试用，验证解析结果）
- *  printf("AST解析结果：\n");
+ *  // 4. Print AST (for debugging, verify parsing results)
+ *  printf("AST parsing results:\n");
  *  ast_print(ast, 0);
  *
- *  // 5. 释放资源（暂时不做代码生成）
+ *  // 5. Free resources (no code generation for now)
  *  ast_free(ast);
  *  parser_free(parser);
  *  lexer_free(lexer);
  *  fclose(in_fp);
  *
- *  // 6. 临时创建空输出文件（避免报错）
+ *  // 6. Create empty output file temporarily (avoid errors)
  *  FILE* out_fp = fopen(argv[2], "wb");
- *  if (!out_fp) error("无法创建输出文件：%s", argv[2]);
+ *  if (!out_fp) error("Cannot create output file: %s", argv[2]);
  *  fclose(out_fp);
  *
- *  printf("解析完成（暂未生成机器码）\n");
+ *  printf("Parsing completed (machine code not generated yet)\n");
  *  return 0;
 }*/
-// -------------------------- 新的main函数，使用cli模块 -------------------------
+// -------------------------- New main function using cli module -------------------------
 int main(int argc, char* argv[]) {
-    // 1. 用新模块解析命令行参数
+    // 1. Parse command line arguments with new module
     EccConfig cfg = cli_parse_args(argc, argv);
 
-    // 2. 调试模式：打印欢迎信息
+    // 2. Debug mode: print welcome message
     cli_print_welcome(&cfg);
 
-    // 3. 打开输入文件（新增调试日志）
+    // 3. Open input file (with debug logging)
     FILE* in_fp = fopen(cfg.input_file, "r");
-    if (!in_fp) error("无法打开输入文件: %s", cfg.input_file);
-    cli_debug_log(&cfg, "成功打开输入文件");
+    if (!in_fp) error("Cannot open input file: %s", cfg.input_file);
+    cli_debug_log(&cfg, "Successfully opened input file");
 
-    // 4. 词法分析（原有逻辑，新增日志）
+    // 4. Lexical analysis (original logic with new logging)
     Lexer* lexer = lexer_init(in_fp);
-    cli_debug_log(&cfg, "词法分析器初始化完成");
+    cli_debug_log(&cfg, "Lexer initialization completed");
 
-    // 5. 语法分析（原有逻辑，新增日志）
+    // 5. Syntax analysis (original logic with new logging)
     Parser* parser = parser_init(lexer);
-    cli_debug_log(&cfg, "开始解析源码...");
+    cli_debug_log(&cfg, "Starting source code parsing...");
     AstNode* ast = parser_parse_file(parser);
-    cli_debug_log(&cfg, "源码解析完成，生成AST");
+    cli_debug_log(&cfg, "Source code parsing completed, AST generated");
 
-    // 6. 代码生成（原有逻辑，新增日志）
+    // 6. Code generation (original logic with new logging)
     FILE* out_fp = fopen(cfg.output_file, "wb");
-    if (!out_fp) error("无法创建输出文件: %s", cfg.output_file);
+    if (!out_fp) error("Cannot create output file: %s", cfg.output_file);
     codegen_init(out_fp);
-    cli_debug_log(&cfg, "开始生成机器码...");
+    cli_debug_log(&cfg, "Starting machine code generation...");
     codegen_generate(ast);
     codegen_cleanup();
     fclose(out_fp);
-    cli_debug_log(&cfg, "机器码生成完成");
+    cli_debug_log(&cfg, "Machine code generation completed");
 
-    // 7. 释放资源（原有逻辑）
+    // 7. Free resources (original logic)
     ast_free(ast);
     parser_free(parser);
     lexer_free(lexer);
@@ -125,7 +126,7 @@ int main(int argc, char* argv[]) {
 
     if (cfg.is_debug) {
         printf("----------------------------------------\n");
-        printf("调试结束\n");
+        printf("Debug session ended\n");
     }
     return 0;
 }

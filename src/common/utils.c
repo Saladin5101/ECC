@@ -3,24 +3,24 @@
 #include <ctype.h>
 #include <stdlib.h>
 
-// -------------------------- 错误处理实现 --------------------------
+// -------------------------- Error handling implementation --------------------------
 void error(const char* format, ...) {
     va_list args;
     va_start(args, format);
     
-    // 统一错误前缀，便于识别
+    // Unified error prefix for easy identification
     fprintf(stderr, "[ERROR] ");
-    vfprintf(stderr, format, args);  // 处理可变参数
-    fprintf(stderr, "\n");           // 自动换行
+    vfprintf(stderr, format, args);  // Handle variable arguments
+    fprintf(stderr, "\n");           // Automatic newline
     
     va_end(args);
-    exit(1);  // 报错后直接退出，避免后续错误
+    exit(1);  // Exit directly after error to avoid subsequent errors
 }
-// -------------------------- 带组信息的错误提示 --------------------------
+// -------------------------- Error message with group information --------------------------
 void error_with_group(const char* id, const char* group) {
     error("E: cannot find '%s' in file, it's not in group '%s'", id, group);
 }
-/* -------------------------- 带文件名和行号的错误提示 --------------------------
+/* -------------------------- Error message with filename and line number --------------------------
  *  void error_with_file_line(const char* filename, int line, const char* format, ...) {
  *  va_list args;
  *  va_start(args, format);
@@ -29,37 +29,37 @@ void error_with_group(const char* id, const char* group) {
  *  fprintf(stderr, "\n");
  *  va_end(args);
 }*/
-// 以上代码暂时预留，后续可根据需要补充
-// -------------------------- 字符串转数字实现 --------------------------
+// Above code is reserved for future use
+// -------------------------- String to number conversion implementation --------------------------
 uint32_t str_to_hex(const char* s) {
     if (s == NULL || *s == '\0') {
-        error("空字符串无法转换为十六进制数字");
+        error("Empty string cannot be converted to hexadecimal number");
     }
 
     uint32_t result = 0;
     const char* ptr = s;
 
-    // 跳过0x或0X前缀
+    // Skip 0x or 0X prefix
     if (ptr[0] == '0' && (ptr[1] == 'x' || ptr[1] == 'X')) {
         ptr += 2;
-        // 若前缀后无内容（如"0x"），报错
+        // If no content after prefix (like "0x"), report error
         if (*ptr == '\0') {
-            error("无效的十六进制数字：%s（仅含前缀）", s);
+            error("Invalid hexadecimal number: %s (prefix only)", s);
         }
     }
 
-    // 逐个字符解析
+    // Parse character by character
     while (*ptr != '\0') {
-        char c = tolower(*ptr);  // 不区分大小写（A-F和a-f一样）
+        char c = tolower(*ptr);  // Case insensitive (A-F and a-f are the same)
         if (isdigit(c)) {
-            // 数字字符（0-9）
+            // Digit character (0-9)
             result = result * 16 + (c - '0');
         } else if (c >= 'a' && c <= 'f') {
-            // 字母字符（a-f）
+            // Letter character (a-f)
             result = result * 16 + (c - 'a' + 10);
         } else {
-            // 非法字符
-            error("无效的十六进制字符：%c（数字：%s）", c, s);
+            // Invalid character
+            error("Invalid hexadecimal character: %c (number: %s)", c, s);
         }
         ptr++;
     }
@@ -69,16 +69,16 @@ uint32_t str_to_hex(const char* s) {
 
 uint32_t str_to_dec(const char* s) {
     if (s == NULL || *s == '\0') {
-        error("空字符串无法转换为十进制数字");
+        error("Empty string cannot be converted to decimal number");
     }
 
     uint32_t result = 0;
     const char* ptr = s;
 
-    // 逐个字符解析（仅允许0-9）
+    // Parse character by character (only allow 0-9)
     while (*ptr != '\0') {
         if (!isdigit(*ptr)) {
-            error("无效的十进制字符：%c（数字：%s）", *ptr, s);
+            error("Invalid decimal character: %c (number: %s)", *ptr, s);
         }
         result = result * 10 + (*ptr - '0');
         ptr++;
@@ -87,7 +87,7 @@ uint32_t str_to_dec(const char* s) {
     return result;
 }
 
-// -------------------------- Token辅助实现 --------------------------
+// -------------------------- TokenHelperimplementation --------------------------
 const char* token_type_to_str(TokenType type) {
     switch (type) {
         case TOKEN_EOF:         return "TOKEN_EOF";
@@ -126,11 +126,11 @@ const char* token_type_to_str(TokenType type) {
     }
 }
 
-// -------------------------- 内存操作实现 --------------------------
+// -------------------------- Memory operation implementation --------------------------
 void* safe_malloc(size_t size) {
     void* ptr = malloc(size);
     if (ptr == NULL) {
-        error("内存分配失败（需要大小：%zu字节）", size);
+        error("Memory allocation failed (required size: %zu bytes)", size);
     }
     return ptr;
 }
